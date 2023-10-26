@@ -1,4 +1,4 @@
-from CsItem import CsItem
+from UtilClasses.CsItem import CsItem
 
 
 class CsItemsList:
@@ -43,11 +43,11 @@ class CsItemsList:
         representation += f'Non error items: [{len(self.non_error_items())}]\n'
 
         for non_error_item in self.non_error_items():
-            representation += f'-{str(non_error_item)}\n'
+            representation += f'-{non_error_item.hash_name}\n'
 
         representation += f'Error items: [{len(self.error_items())}]\n'
 
         for error_item in self.error_items():
-            representation += f'-{str(error_item)}\n'
+            representation += f'-{error_item.hash_name}\n'
 
         return representation

@@ -1,3 +1,6 @@
+from config import ItemsAnalyzer
+
+
 class CsItem:
     def __init__(self, hash_name: str, error: str = None, buff_url: str = None, buff_price: float = None,
                  market_price: float = None):
@@ -8,10 +11,11 @@ class CsItem:
 
         self.processing_error = error
 
-    def __str__(self):
-        return self.__hash_name
-
     def __repr__(self):
+        """
+        Packs all properties into multiple lines representation.
+        :return: multiple lines string.
+        """
         representation = 'Cs item representation.\n\n'
         representation += f'Hash name: {self.__hash_name}\n'
 
@@ -53,6 +57,10 @@ class CsItem:
 
     @property
     def buff_cost_price(self):
+        """
+        How much you need to deposit to buff, to afford this item.
+        :return: int of rubbles.
+        """
         if self.__buff_price is None:
             return None
 
@@ -60,14 +68,25 @@ class CsItem:
 
     @property
     def short_repr(self) -> str:
-        return f'{str(self)}\nProfit: {self.profit_rub}₽ ({self.profit_percent}%)'
+        """
+        Short representation that fits two lines.
+        :return: hash name \n profit (rub) profit (%)
+        """
+        return f'{self.__hash_name}\nProfit: {self.profit_rub}₽ ({self.profit_percent}%)'
 
-    # Returns [hash_name, cost_price, profit_rub, profit_percent]
     @property
     def properties_array(self) -> []:
+        """
+        Packs all properties in array.
+        :return: [hash_name, cost_price, profit_rub, profit_percent]
+        """
         return [self.__hash_name, self.buff_cost_price, self.profit_rub, self.profit_percent]
 
     def __market_cost_price(self):
+        """
+        How much can you get if you offer it at the lowest price.
+        :return: int of rubbles.
+        """
         if self.__market_price is None:
             return None
 
@@ -75,3 +94,7 @@ class CsItem:
 
     def __market_url(self):
         return f'https://market.csgo.com/en/{self.__hash_name.replace(" ", "")}'
+
+
+class LackOfData(Exception):
+    pass

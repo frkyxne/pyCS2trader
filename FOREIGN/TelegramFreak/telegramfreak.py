@@ -1,7 +1,7 @@
 import telebot
-import config
-import constants
-from utilclasses import UserRequest, BotMessage, BotReply
+from FOREIGN.TelegramFreak import constants
+from FOREIGN.TelegramFreak.utilclasses import UserRequest, BotMessage, BotReply
+from FOREIGN.TelegramFreak import config
 
 
 class TelegramFreak:

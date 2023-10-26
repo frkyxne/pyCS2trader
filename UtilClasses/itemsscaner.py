@@ -5,8 +5,8 @@ import urllib.parse
 import requests
 from FOREIGN.csmarketapi import CsMarket
 from config import ItemsScaner as ScanerConfig
-from CsItem import CsItem
-from CsItemList import CsItemsList
+from UtilClasses.CsItem import CsItem
+from UtilClasses.CsItemList import CsItemsList
 
 
 class ItemsScaner:
@@ -85,6 +85,9 @@ class ItemsScaner:
         except BuffRequestFailure as exception:
             return CsItemsList(list_name=list_name, error=str(exception))
 
+        print(f'Buff page {page_index} was scanned, sleeping...')
+        ItemsScaner.__sleep()
+
         # Get hash names in buff datas.
         hash_names = [hash_name['market_hash_name'] for hash_name in buff_datas]
 
@@ -103,8 +106,6 @@ class ItemsScaner:
 
             cs_items.append(self.__parse_item(hash_name=hash_name, buff_data=buff_data, market_data=market_data))
 
-        print(f'Buff page {page_index} was scanned, sleeping...')
-        ItemsScaner.__sleep()
         return CsItemsList(list_name=list_name, items=cs_items)
 
     def __set_buff_ids(self):
@@ -258,7 +259,10 @@ class ItemsScaner:
         :param market_data: Market data of sought-for item to parse.
         :return: Parsed CsItem.
         """
-        buff_url = f'https://buff.163.com/goods/{self.__get_buff_id_by_hash(hash_name=hash_name)}'
+        try:
+            buff_url = f'https://buff.163.com/goods/{self.__get_buff_id_by_hash(hash_name=hash_name)}'
+        except KeyError:
+            raise ParsingFailure('Buff id was now found.')
 
         # Get min buff price.
         try:
@@ -270,7 +274,7 @@ class ItemsScaner:
             raise ParsingFailure('Failed to parse buff data.')
 
         # Market data can be empty if there is no items on market.
-        if len(market_data) > 0:
+        if market_data is not None and len(market_data) > 0:
             try:
                 market_price = float(int(market_data[0]['price']) / 100)
             except KeyError:

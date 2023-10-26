@@ -14,12 +14,12 @@ class ItemsScaner:
         'AQ_HD': '1',
         'YD_SC_SID': 'XXX',
         'NETS_utid': 'XXX',
-        'NTES_YD_SESS': 'jHq_7VcML_g6tSje.3gx.78rCTnPqBrVhvOEqqdpIKUNT7Ap0cd2Fkdpfmn7eC5XuJ4OlHFTBKXnDMSSJ9ToRj5unCvDxboeUCm4lx3TrJQdIVgJODzaeG.bCvHJTQN1a9DW9AVLxv1jts5VSYpKd1K3VCjYNT0nxFC6qucjAhUl8AHXjKEaaWSjML0K3gSGsBp5Ne2QGeUhkJ5eFaURqsii4y_6dH508V46kPtqfxW3Q',
+        'NTES_YD_SESS': 'XXX',
         'S_INFO': '1696835338|0|0&60##|7-9918096329',
         'P_INFO': '7-9918096329|1696835338|1|netease_buff|00&99|null&null&null#RU&null#10#0|&0||7-9918096329',
-        'remember_me': 'U1077865208|4oxBIHY0fZWd63GlZHQiSqR88P1lRfW0',
-        'session': '1-kuBGr2Wqq0qtwQkPO84LLbJ0Tj_QSomjEvCSusjKj_5q2029024672',
-        'csrf_token': 'IjJiY2U3MTFkZGJmZDRiMTUyZGNlNjA5ODVhYWJkODkxZTRjMjdiZDMi.GAZwOA.DnE4_HhuHbaAlyVL0P7gQMgj8gg',
+        'remember_me': 'U1077865208|PCAhb1iKEByv8cMSTeoe8VbWARrseWrn',
+        'session': '1-XWTZrUcNaBdoHvCDlLZWWBgOPVKtepGbyxRwF5OUpwPI2029024672',
+        'csrf_token': 'ImVmNjEwZjc5ZWM2YTY1YjE2ZTc2OGFlOTlmMTk5NDdjZWQ5NDQ5OGEi.GBuqCQ.cQrSyNGqMmV8C_K0y1msZfWOfm4',
     }
 
     BUFF_HEADERS = {
@@ -46,3 +46,19 @@ class ItemsScaner:
     }
 
     SCAN_LISTS_FOLDER_NAME = 'F:/Code/GitHubRepositories/buffscaner/Scan lists'
+
+
+class ItemsAnalyzer:
+    BUFF_DEPOSIT_MODIFIER = 1
+    MARKET_WITHDRAW_MODIFIER = 0.9025
+    RUB_TO_CNY = 13.55
+
+class ItemsStorage:
+    MIN_PROFIT_PERCENT = 10
+    MAX_PROFIT_PERCENT = 100
+    MIN_PROFIT_RUB = 50
+    MAX_BUFF_COST_RUB = 5000
+    PAGE_ITEMS_COUNT = 5
+
+    STORAGE_SAVES_FOLDER_NAME = 'F:/Code/GitHubRepositories/buffscaner/Storage saves'
+    STORAGE_SAVE_HEADER = ['hash_name', 'cost_price', 'profit_rub', 'profit_percent']
