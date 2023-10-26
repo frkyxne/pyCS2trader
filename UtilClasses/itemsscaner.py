@@ -15,7 +15,7 @@ class ItemsScaner:
             self.__market = CsMarket(api_key=ScanerConfig.CS_MARKET_API_KEY)
             self.__set_buff_ids()
         except Exception as exception:
-            raise ScanerInitializationFailure(f'Failed to initialize ItemsScaner: {exception}')
+            raise ScanerInitializationException(f'Failed to initialize ItemsScaner: {exception}')
 
     def scan_item(self, hash_name: str) -> CsItem:
         """
@@ -26,7 +26,7 @@ class ItemsScaner:
         try:
             buff_data = self.__get_item_buff_data(hash_name=hash_name)
         except BuffRequestFailure as exception:
-            return CsItem(hash_name=hash_name, error=str(exception))
+            raise ScanningException(exception)
 
         try:
             market_data = self.__get_item_market_data(hash_name=hash_name)
@@ -42,51 +42,58 @@ class ItemsScaner:
 
     def scan_list(self, list_name: str) -> CsItemsList:
         """
-        Scans buff and market for items by saved list name.
+        Scans buff and market for items by saved list name. ScanningException can be raised.
         :param list_name: Name of saved list.
         :return: Parsed CsItemsList.
         """
         try:
             hash_names = ItemsScaner.__get_hashes_by_scan_list_name(list_name)
         except FileNotFoundError:
-            return CsItemsList(list_name=list_name, error='List name was not found.')
+            raise ScanningException('List file was not found.')
 
         buff_items_dict = self.__get_list_buff_data(hash_names=hash_names)
 
+        non_error_hashes = []
+        error_items = []
+
+        for hash_name in buff_items_dict.keys():
+            # If data is string, it is an error (Check __get_list_buff_data).
+            if type(buff_items_dict[hash_name]) is str:
+                error_items.append(CsItem(hash_name=hash_name, error=buff_items_dict[hash_name]))
+            else:
+                non_error_hashes.append(hash_name)
+
         try:
-            market_items_dict = self.__get_list_market_data(hash_names=hash_names)
+            market_items_dict = self.__get_list_market_data(hash_names=non_error_hashes)
         except MarketRequestFailure as exception:
-            return CsItemsList(list_name=list_name, error=str(exception))
+            raise ScanningException(exception)
 
         cs_items = []
 
-        for hash_name in hash_names:
+        for hash_name in non_error_hashes:
             buff_data = buff_items_dict[hash_name]
+            market_data = market_items_dict[hash_name]
 
-            if type(buff_data) is str:
-                cs_items.append(CsItem(hash_name=hash_name, error=buff_data))
-            else:
-                market_data = market_items_dict[hash_name]
+            try:
                 cs_items.append(self.__parse_item(hash_name=hash_name, buff_data=buff_data, market_data=market_data))
+            except ParsingFailure as exception:
+                error_items.append(CsItem(hash_name=hash_name, error=str(exception)))
+
+        cs_items.extend(error_items)
 
         return CsItemsList(list_name=list_name, items=cs_items)
 
     def scan_buff_page(self, page_index: int) -> CsItemsList:
         """
-        Scans buff page and returns parsed CsItemsList.
+        Scans buff page and returns parsed CsItemsList. ScanningException can be raised.
         :param page_index: Index of Buff page to parse.
         :return: Parsed CsItemsList.
         """
-        list_name = f'Buff page {page_index}'
-
         # Scan buff.
         try:
             buff_datas = ItemsScaner.__get_buff_page_data(page_index=page_index)
         except BuffRequestFailure as exception:
-            return CsItemsList(list_name=list_name, error=str(exception))
-
-        print(f'Buff page {page_index} was scanned, sleeping...')
-        ItemsScaner.__sleep()
+            raise ScanningException(str(exception))
 
         # Get hash names in buff datas.
         hash_names = [hash_name['market_hash_name'] for hash_name in buff_datas]
@@ -95,18 +102,19 @@ class ItemsScaner:
         try:
             market_datas = self.__get_list_market_data(hash_names=hash_names)
         except MarketRequestFailure as exception:
-            return CsItemsList(list_name=list_name, error=str(exception))
-
+            raise ScanningException(str(exception))
         cs_items = []
-
         for i in range(len(hash_names)-1):
             hash_name = hash_names[i]
             buff_data = buff_datas[i]
             market_data = market_datas[hash_name] if hash_name in market_datas.keys() else None
 
-            cs_items.append(self.__parse_item(hash_name=hash_name, buff_data=buff_data, market_data=market_data))
-
-        return CsItemsList(list_name=list_name, items=cs_items)
+            try:
+                cs_items.append(self.__parse_item(hash_name=hash_name, buff_data=buff_data, market_data=market_data))
+            except ParsingFailure as exception:
+                cs_items.append(CsItem(hash_name=hash_name, error=str(exception)))
+        ItemsScaner.__sleep()
+        return CsItemsList(items=cs_items)
 
     def __set_buff_ids(self):
         """
@@ -213,7 +221,6 @@ class ItemsScaner:
                     items[item_data['market_hash_name']] = item_data
 
                 return item_datas
-
             else:
                 raise BuffRequestFailure(f'Buff request is failure {buff_json_load}')
         except Exception as ex:
@@ -239,9 +246,7 @@ class ItemsScaner:
         :return: Dictionary[hash name] = data.
         """
         try:
-            print('Asking cs market...')
             item_datas = self.__market.search_list_items_by_hash_name_all(list_hash_name=hash_names)['data']
-            print('Cs market responded, parsing...')
             cs_items = {}
 
             for item_data in item_datas:
@@ -306,7 +311,7 @@ class ItemsScaner:
 
 # Exceptions
 
-class ScanerInitializationFailure(Exception):
+class ScanerInitializationException(Exception):
     pass
 
 
@@ -319,6 +324,10 @@ class BuffParseFailure(Exception):
 
 
 class MarketRequestFailure(Exception):
+    pass
+
+
+class ScanningException(Exception):
     pass
 
 

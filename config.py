@@ -45,7 +45,7 @@ class ItemsScaner:
         'page_num': '1',
     }
 
-    SCAN_LISTS_FOLDER_NAME = 'F:/Code/GitHubRepositories/buffscaner/Scan lists'
+    SCAN_LISTS_FOLDER_NAME = 'F:/Code/GitHubRepositories/BuffScaner/Scan lists'
 
 
 class ItemsAnalyzer:
@@ -53,12 +53,9 @@ class ItemsAnalyzer:
     MARKET_WITHDRAW_MODIFIER = 0.9025
     RUB_TO_CNY = 13.55
 
+
 class ItemsStorage:
-    MIN_PROFIT_PERCENT = 10
-    MAX_PROFIT_PERCENT = 100
-    MIN_PROFIT_RUB = 50
-    MAX_BUFF_COST_RUB = 5000
     PAGE_ITEMS_COUNT = 5
 
-    STORAGE_SAVES_FOLDER_NAME = 'F:/Code/GitHubRepositories/buffscaner/Storage saves'
+    STORAGE_SAVES_FOLDER_NAME = 'F:/Code/GitHubRepositories/BuffScaner/Storage saves'
     STORAGE_SAVE_HEADER = ['hash_name', 'cost_price', 'profit_rub', 'profit_percent']

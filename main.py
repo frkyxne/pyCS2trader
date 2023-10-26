@@ -2,7 +2,7 @@ from constants import ConstantCommands
 from constants import ConstantExceptions
 from UtilClasses.itemsstorage import ItemsStorage
 from UtilClasses.userrequest import UserRequest
-from UtilClasses import itemsscaner
+from UtilClasses.itemsscaner import ItemsScaner, ScanningException, ScanerInitializationException
 
 
 class Main:
@@ -40,8 +40,12 @@ class Main:
             return ConstantExceptions.MISSING_ARGUMENT
 
         item_hash = user_request.command_arg
-        print(f'{item_hash} scan started.')
-        cs_item = self.__scaner.scan_item(hash_name=item_hash)
+
+        try:
+            cs_item = self.__scaner.scan_item(hash_name=item_hash)
+        except ScanningException as exception:
+            return str(exception)
+
         self.__storage.add_item(item=cs_item)
         return repr(cs_item)
 
@@ -50,8 +54,12 @@ class Main:
             return ConstantExceptions.MISSING_ARGUMENT
 
         list_name = user_request.command_arg
-        print(f'"{list_name}" list scan started')
-        cs_items_list = self.__scaner.scan_list(list_name=list_name)
+
+        try:
+            cs_items_list = self.__scaner.scan_list(list_name=list_name)
+        except ScanningException as exception:
+            return str(exception)
+
         self.__storage.add_items(cs_items_list)
         return repr(cs_items_list)
 
@@ -68,8 +76,13 @@ class Main:
             return 'Page index can not be < 1.'
 
         for i in range(1, page_index + 1):
-            page_list = self.__scaner.scan_buff_page(i)
+            try:
+                page_list = self.__scaner.scan_buff_page(i)
+            except ScanningException as exception:
+                return f'Exception raised during scanning page {i}: {exception}'
+
             self.__storage.add_items(page_list)
+            print(f'Buff page {i} was parsed and moved into storage.')
 
         return f'Buff pages scan complete. {page_index} pages was scanned.'
 
@@ -118,9 +131,9 @@ class Main:
         request_command = user_request.command
 
         if request_command in self.__command_methods.keys():
-            return self.__command_methods[request_command](user_request=user_request)
+            return f'\n{self.__command_methods[request_command](user_request=user_request)}'
         else:
-            return 'Command is not supported.'
+            return f'\nCommand "{request_command}" is not supported.'
 
     def __handle_command(self):
         """
@@ -137,9 +150,9 @@ class Main:
         :return: Is successful?
         """
         try:
-            self.__scaner = itemsscaner.ItemsScaner()
+            self.__scaner = ItemsScaner()
             return True
-        except itemsscaner.ScanerInitializationFailure as exception:
+        except ScanerInitializationException as exception:
             print(exception)
             return False
 
