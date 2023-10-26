@@ -1,31 +1,22 @@
-from UtilClasses.CsItem import CsItem
+from UtilClasses.csitem import CsItem
 
 
 class CsItemsList:
     def __init__(self, list_name: str = None, items: [CsItem] = None, error: str = None):
         self.__list_name = list_name
-        self.__items = items
+        self.__items = items if items is not None else []
         self.__error = error
 
     def __iter__(self):
         return iter(self.__items)
 
     def __len__(self):
-        if self.__items is None:
-            return 0
-
         return len(self.__items)
 
     def non_error_items(self):
-        if self.__items is None:
-            return None
-
         return [item for item in self.__items if item.processing_error is None]
 
     def error_items(self):
-        if self.__items is None:
-            return None
-
         return [item for item in self.__items if item.processing_error is not None]
 
     def __repr__(self):
@@ -37,7 +28,7 @@ class CsItemsList:
         if self.__error is not None:
             representation += f'Error: {self.__error}\n'
 
-        if self.__items is None:
+        if len(self.__items) == 0:
             return representation
 
         representation += f'Non error items: [{len(self.non_error_items())}]\n'

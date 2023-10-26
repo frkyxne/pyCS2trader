@@ -1,6 +1,6 @@
 import csv
-from UtilClasses.CsItem import CsItem
-from UtilClasses.CsItemList import CsItemsList
+from UtilClasses.csitem import CsItem
+from UtilClasses.csitemlist import CsItemsList
 from constants import ItemStorage as StorageConstants
 from config import ItemsStorage as StorageConfig
 
@@ -47,7 +47,7 @@ class ItemsStorage:
         if items is None or len(items) == 0:
             return
 
-        for item in items:
+        for item in items.non_error_items():
             self.add_item(item)
 
     def remove_page(self, page_index: int) -> str:
@@ -102,19 +102,25 @@ class ItemsStorage:
 
         return f'Storage was sorted by: {sorting_attribute}.'
 
-    def save(self, file_name: str):
+    def save(self, file_name: str) -> str:
         """
         Saves all items in .csv file.
         :param file_name: Name of save file.
-        :return: None
+        :return: Callback of operation.
         """
-        with (open(f'{StorageConfig.STORAGE_SAVES_FOLDER_NAME}/{file_name}.csv', 'w', encoding='UTF8', newline='')
-              as file):
-            writer = csv.writer(file)
-            writer.writerow(StorageConfig.STORAGE_SAVE_HEADER)
+        try:
+            with (open(f'{StorageConfig.STORAGE_SAVES_FOLDER_NAME}/{file_name}.csv', 'w', encoding='UTF8', newline='')
+                  as file):
+                writer = csv.writer(file)
+                writer.writerow(StorageConfig.STORAGE_SAVE_HEADER)
 
-            for item in self.__items:
-                writer.writerow(item.properties_array)
+                for item in self.__items:
+                    writer.writerow(item.properties_array)
+
+        except Exception as exception:
+            return f'During storage save exception occurred: {exception}'
+
+        return 'Storage saved.'
 
     def __get_item_by_hash(self, hash_name: str):
         """

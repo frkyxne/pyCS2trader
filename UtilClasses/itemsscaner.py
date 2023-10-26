@@ -5,8 +5,8 @@ import urllib.parse
 import requests
 from FOREIGN.csmarketapi import CsMarket
 from config import ItemsScaner as ScanerConfig
-from UtilClasses.CsItem import CsItem
-from UtilClasses.CsItemList import CsItemsList
+from UtilClasses.csitem import CsItem
+from UtilClasses.csitemlist import CsItemsList
 
 
 class ItemsScaner:
