@@ -2,10 +2,9 @@ from UtilClasses.csitem import CsItem
 
 
 class CsItemsList:
-    def __init__(self, list_name: str = None, items: [CsItem] = None, error: str = None):
+    def __init__(self, items: [CsItem], list_name: str = None):
         self.__list_name = list_name
-        self.__items = items if items is not None else []
-        self.__error = error
+        self.__items = items
 
     def __iter__(self):
         return iter(self.__items)
@@ -20,16 +19,10 @@ class CsItemsList:
         return [item for item in self.__items if item.processing_error is not None]
 
     def __repr__(self):
-        representation = 'Cs items list representation.\n\n'
+        representation = f'{"-"*29}\nCs items list representation.\n\n'
 
         if self.__list_name is not None:
             representation += f'List name: {self.__list_name}\n'
-
-        if self.__error is not None:
-            representation += f'Error: {self.__error}\n'
-
-        if len(self.__items) == 0:
-            return representation
 
         representation += f'Non error items: [{len(self.non_error_items())}]\n'
 
@@ -41,4 +34,5 @@ class CsItemsList:
         for error_item in self.error_items():
             representation += f'-{error_item.hash_name}\n'
 
+        representation += '-' * len(representation.split('\n')[-2])
         return representation

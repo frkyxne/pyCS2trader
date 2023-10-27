@@ -5,7 +5,6 @@ class ItemsScaner:
 
     AUTO_SCAN_TIMEOUT_MIN = 10
     AUTO_SCAN_TIMEOUT_MAX = 13
-    AUTO_SCAN_DO = False
 
     BUFF_COOKIES = {
         'Device-Id': 'DxOuNxr6QYqhI1OP4Pej',
@@ -51,11 +50,16 @@ class ItemsScaner:
 class ItemsAnalyzer:
     BUFF_DEPOSIT_MODIFIER = 1
     MARKET_WITHDRAW_MODIFIER = 0.9025
-    RUB_TO_CNY = 13.55
+    DEPOSIT_RUB_TO_CNY = 14
 
 
 class ItemsStorage:
     PAGE_ITEMS_COUNT = 5
 
     STORAGE_SAVES_FOLDER_NAME = 'F:/Code/GitHubRepositories/BuffScaner/Storage saves'
-    STORAGE_SAVE_HEADER = ['hash_name', 'cost_price', 'profit_rub', 'profit_percent']
+    STORAGE_SAVE_HEADER = ['hash_name', 'buff_cny_price', 'buff_rub_price', 'market_price', 'rub to cny', 'profit_rub',
+                           'profit_percent']
+
+
+class Main:
+    PAGES_TO_AUTOSAVE = 100

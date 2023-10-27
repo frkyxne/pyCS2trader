@@ -1,8 +1,10 @@
+from datetime import datetime
 from constants import ConstantCommands
 from constants import ConstantExceptions
 from UtilClasses.itemsstorage import ItemsStorage
 from UtilClasses.userrequest import UserRequest
 from UtilClasses.itemsscaner import ItemsScaner, ScanningException, ScanerInitializationException
+from config import Main as MainConfig
 
 
 class Main:
@@ -79,10 +81,15 @@ class Main:
             try:
                 page_list = self.__scaner.scan_buff_page(i)
             except ScanningException as exception:
-                return f'Exception raised during scanning page {i}: {exception}'
+                print(f'[{self.__get_str_time()}] Exception raised during scanning page {i}: {exception}')
+                continue
 
             self.__storage.add_items(page_list)
-            print(f'Buff page {i} was parsed and moved into storage.')
+            print(f'[{self.__get_str_time()}] Buff page {i} was parsed and moved into storage.')
+
+            if i % MainConfig.PAGES_TO_AUTOSAVE == 0:
+                self.__storage.save('autosave')
+                print('Storage was auto saved.')
 
         return f'Buff pages scan complete. {page_index} pages was scanned.'
 
@@ -159,6 +166,11 @@ class Main:
     @staticmethod
     def __die(user_request: UserRequest):
         exit()
+
+    @staticmethod
+    def __get_str_time():
+        s = str(datetime.now().time())
+        return s.split('.')[0]
 
 
 if __name__ == '__main__':

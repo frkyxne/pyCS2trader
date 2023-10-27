@@ -10,11 +10,12 @@ class ItemsStorage:
         self.__items = []
 
     def __repr__(self):
-        representation = 'Items storage representation.\n\n'
+        representation = f'{"-"*29}\nItems storage representation.\n\n'
 
         items_len = len(self.__items)
-        representation += f'Items in storage: [{items_len}] ([{self.pages_count}] pages).\n'
+        representation += f'Items in storage: [{items_len}] ([{self.pages_count}] pages).'
 
+        representation += '\n' + '-' * len(representation.split('\n')[-1])
         return representation
 
     @property
@@ -96,7 +97,7 @@ class ItemsStorage:
             case StorageConstants.SORTING_ATTRIBUTE_PERCENT:
                 self.__items.sort(key=lambda x: x.profit_percent, reverse=True)
             case StorageConstants.SORTING_ATTRIBUTE_COST_PRICE:
-                self.__items.sort(key=lambda x: x.buff_cost_price, reverse=True)
+                self.__items.sort(key=lambda x: x.buff_rub_price, reverse=True)
             case _:
                 return f'Sorting attribute "{sorting_attribute}" is not supported.'
 
