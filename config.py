@@ -48,8 +48,6 @@ class ItemsScaner:
 
 
 class ItemsAnalyzer:
-    BUFF_DEPOSIT_MODIFIER = 1
-    MARKET_WITHDRAW_MODIFIER = 0.9025
     DEPOSIT_RUB_TO_CNY = 14
 
 
@@ -57,7 +55,7 @@ class ItemsStorage:
     PAGE_ITEMS_COUNT = 5
 
     STORAGE_SAVES_FOLDER_NAME = 'F:/Code/GitHubRepositories/BuffScaner/Storage saves'
-    STORAGE_SAVE_HEADER = ['hash_name', 'buff_cny_price', 'buff_rub_price', 'market_price', 'rub to cny', 'profit_rub',
+    STORAGE_SAVE_HEADER = ['hash_name', 'buff_cny_price', 'buff_rub_price', 'market_price', 'rub to cny',
                            'profit_percent']
 
 

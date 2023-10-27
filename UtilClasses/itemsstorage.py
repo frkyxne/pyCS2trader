@@ -51,57 +51,12 @@ class ItemsStorage:
         for item in items.non_error_items():
             self.add_item(item)
 
-    def remove_page(self, page_index: int) -> str:
-        """
-        Tries to remove page from storage.
-        :param page_index: Index of page to delete.
-        :return: Callback of operation.
-        """
-        if page_index < self.pages_count:
-            return 'Page index is lower than storage pages count.'
-
-        for page_item in self.__get_items_by_page(page_index=page_index):
-            self.__items.remove(page_item)
-
-        return 'Page items were removed from storage.'
-
     def clear(self):
         """
         Removes all items from storage.
         :return: None
         """
         self.__items.clear()
-
-    def get_page_repr(self, page_index: int) -> str:
-        """
-        :param page_index: Index of page to represent.
-        :return: Representation of storage page.
-        """
-        if len(self.__items) == 0:
-            return StorageConstants.EXCEPTION_STORAGE_EMPTY
-
-        return self.__get_page_repr(page_index=page_index)
-
-    def sort_items(self, sorting_attribute: str) -> str:
-        """
-        Tries to sort storage by given attribute.
-        :param sorting_attribute: Attribute to sort by.
-        :return: Callback of operation.
-        """
-        if len(self.__items) == 0:
-            return StorageConstants.EXCEPTION_STORAGE_EMPTY
-
-        match sorting_attribute:
-            case StorageConstants.SORTING_ATTRIBUTE_PROFIT_RUB:
-                self.__items.sort(key=lambda x: x.profit_rub, reverse=True)
-            case StorageConstants.SORTING_ATTRIBUTE_PERCENT:
-                self.__items.sort(key=lambda x: x.profit_percent, reverse=True)
-            case StorageConstants.SORTING_ATTRIBUTE_COST_PRICE:
-                self.__items.sort(key=lambda x: x.buff_rub_price, reverse=True)
-            case _:
-                return f'Sorting attribute "{sorting_attribute}" is not supported.'
-
-        return f'Storage was sorted by: {sorting_attribute}.'
 
     def save(self, file_name: str) -> str:
         """
@@ -133,40 +88,3 @@ class ItemsStorage:
             if good.hash_name == hash_name:
                 return good
         return None
-
-    def __get_items_by_page(self, page_index) -> [CsItem]:
-        """
-        Tries to get items on given page.
-        :param page_index: Page index to search items on.
-        :return: Empty array or [CsItem] array.
-        """
-        if page_index > self.pages_count:
-            return []
-
-        items = []
-        start_index = (page_index - 1) * StorageConfig.PAGE_ITEMS_COUNT
-        end_index = start_index + StorageConfig.PAGE_ITEMS_COUNT
-
-        if len(self.__items) < end_index:
-            end_index = len(self.__items) - 1
-
-        for i in range(start_index, end_index + 1):
-            items.append(self.__items[i])
-
-        return items
-
-    def __get_page_repr(self, page_index) -> str:
-        """
-        Makes representation of given page.
-        :param page_index: Index of page to represent.
-        :return: str
-        """
-        if page_index > self.pages_count:
-            return 'Page index is more than storage has.'
-
-        representation = f'Storage page [{page_index}]:\n'
-
-        for page_item in self.__get_items_by_page(page_index=page_index):
-            representation += page_item.short_repr + '\n\n'
-
-        return representation

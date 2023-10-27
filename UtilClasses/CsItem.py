@@ -21,23 +21,10 @@ class CsItem:
 
         if self.processing_error is not None:
             representation += f'Processing error: {self.processing_error}\n\n'
-
-        if self.__buff_price is not None:
-            representation += f'Buff price: {self.__buff_price}¥\n'
-
-        if self.__market_price is not None:
-            representation += f'Market price: {self.__market_price}₽\n\n'
-
-        if self.buff_rub_price is not None:
-            representation += f'Buff cost price: {self.buff_rub_price}₽\n'
-
-        if self.__market_withdraw_price() is not None:
-            representation += f'Market withdraw price: {self.__market_withdraw_price()}₽\n'
-
-        if self.profit_rub is not None and self.profit_percent is not None:
-            representation += f'Profit: {self.profit_rub}₽ ({self.profit_percent}%)\n\n'
-
-        if self.__buff_url is not None:
+        else:
+            representation += f'Buff price: {self.__buff_price}¥ ({self.buff_rub_price}₽)\n'
+            representation += f'Market price: {self.__market_price}₽\n'
+            representation += f'Profit percent: {self.profit_percent}%\n'
             representation += f'Buff url: {self.__buff_url}\n'
 
         representation += '-' * len(representation.split('\n')[-2])
@@ -46,20 +33,6 @@ class CsItem:
     @property
     def hash_name(self):
         return self.__hash_name
-
-    @property
-    def profit_rub(self):
-        if self.__market_withdraw_price() is None or self.__buff_price is None:
-            return None
-
-        return self.__market_withdraw_price() - self.buff_rub_price
-
-    @property
-    def profit_percent(self):
-        if self.profit_rub is None or self.buff_rub_price is None:
-            return None
-
-        return round(self.profit_rub / self.buff_rub_price, 2) * 100
 
     @property
     def buff_rub_price(self):
@@ -73,7 +46,7 @@ class CsItem:
         return round(self.__buff_price * ItemsAnalyzer.DEPOSIT_RUB_TO_CNY)
 
     @property
-    def rub_to_cny_ratio(self):
+    def rub_to_cny(self):
         """
         Market price / buff price.
         :return: float of ratio
@@ -84,28 +57,21 @@ class CsItem:
         return round(self.__market_price / self.__buff_price, 2)
 
     @property
-    def short_repr(self) -> str:
+    def profit_percent(self):
         """
-        Short representation that fits two lines.
-        :return: hash name \n profit (rub) profit (%)
+        Delta between item rub to cny and deposit rub to cny.
+        :return: int - %.
         """
-        return f'{self.__hash_name}\nProfit: {self.profit_rub}₽ ({self.profit_percent}%)'
+        if self.rub_to_cny is None:
+            return None
+
+        return round((self.rub_to_cny / ItemsAnalyzer.DEPOSIT_RUB_TO_CNY), 2)
 
     @property
     def properties_array(self) -> []:
         """
         Packs all properties in array.
-        :return: [hash_name, buff_price,  buff_rub_price, market_price,rub_to_cny_ratio, profit_rub, profit_percent]
+        :return: [hash_name, buff_price,  buff_rub_price, market_price, rub_to_cny_ratio, profit_percent]
         """
-        return [self.__hash_name, self.__buff_price, self.buff_rub_price, self.__market_price,self.rub_to_cny_ratio,
-                self.profit_rub, self.profit_percent]
-
-    def __market_withdraw_price(self):
-        """
-        How much can you get if you offer it at the lowest price.
-        :return: int of rubbles.
-        """
-        if self.__market_price is None:
-            return None
-
-        return round(self.__market_price * ItemsAnalyzer.MARKET_WITHDRAW_MODIFIER)
+        return [self.__hash_name, self.__buff_price, self.buff_rub_price, self.__market_price, self.rub_to_cny,
+                self.profit_percent]
