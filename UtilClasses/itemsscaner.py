@@ -1,21 +1,35 @@
+import os
 import json
 import time
 import random
 import urllib.parse
 import requests
 from FOREIGN.csmarketapi import CsMarket
-from config import ItemsScaner as ScanerConfig
 from UtilClasses.csitem import CsItem
 from UtilClasses.csitemlist import CsItemsList
+from UtilClasses.configloader import ConfigLoader
 
 
 class ItemsScaner:
-    def __init__(self):
+    def __init__(self, config_loader: ConfigLoader):
+        self.__market = None
+        self.__request_timeout_min = None
+        self.__request_timeout_max = None
+        self.__buff_session = None
+        self.__rub_to_cny_ratio = None
+
         try:
-            self.__market = CsMarket(api_key=ScanerConfig.CS_MARKET_API_KEY)
+            self.load_config(config_loader=config_loader)
             self.__set_buff_ids()
         except Exception as exception:
             raise ScanerInitializationException(f'Failed to initialize ItemsScaner: {exception}')
+
+    def load_config(self, config_loader: ConfigLoader):
+        self.__market = CsMarket(api_key=config_loader.cs_market_api_key)
+        self.__buff_session = config_loader.buff_session
+        self.__request_timeout_min = config_loader.request_timeout_min
+        self.__request_timeout_max = config_loader.request_timeout_max
+        self.__rub_to_cny_ratio = config_loader.rub_to_cny_ratio
 
     def scan_item(self, hash_name: str) -> CsItem:
         """
@@ -91,7 +105,7 @@ class ItemsScaner:
         """
         # Scan buff.
         try:
-            buff_datas = ItemsScaner.__get_buff_page_data(page_index=page_index)
+            buff_datas = self.__get_buff_page_data(page_index=page_index)
         except BuffRequestFailure as exception:
             raise ScanningException(str(exception))
 
@@ -104,7 +118,7 @@ class ItemsScaner:
         except MarketRequestFailure as exception:
             raise ScanningException(str(exception))
         cs_items = []
-        for i in range(len(hash_names)-1):
+        for i in range(len(hash_names) - 1):
             hash_name = hash_names[i]
             buff_data = buff_datas[i]
             market_data = market_datas[hash_name] if hash_name in market_datas.keys() else None
@@ -113,7 +127,8 @@ class ItemsScaner:
                 cs_items.append(self.__parse_item(hash_name=hash_name, buff_data=buff_data, market_data=market_data))
             except ParsingFailure as exception:
                 cs_items.append(CsItem(hash_name=hash_name, error=str(exception)))
-        ItemsScaner.__sleep()
+
+        self.__sleep()
         return CsItemsList(items=cs_items)
 
     def __set_buff_ids(self):
@@ -122,7 +137,8 @@ class ItemsScaner:
         :return: None
         """
         self.__buff_ids = {}
-        buff_ids_lines = requests.get(url=ScanerConfig.BUFF_URL_IDS_FILE).text.split('\n')
+        buff_ids_url = 'https://raw.githubusercontent.com/ModestSerhat/buff163-ids/main/buffids.txt'
+        buff_ids_lines = requests.get(url=buff_ids_url).text.split('\n')
 
         for buff_id_line in buff_ids_lines:
             split = buff_id_line.split(';')
@@ -155,12 +171,13 @@ class ItemsScaner:
             'goods_id': buff_id
         }
 
-        buff_item_url = f'{ScanerConfig.BUFF_URL_SALE}/sell_order?{urllib.parse.urlencode(params)}'
+        buff_item_url = f'https://buff.163.com/api/market/goods/sell_order?{urllib.parse.urlencode(params)}'
 
         # Trying to get buff response.
+        buff_cookies = {'session': self.__buff_session}
+
         try:
-            buff_response = requests.get(url=buff_item_url, cookies=ScanerConfig.BUFF_COOKIES,
-                                         headers=ScanerConfig.BUFF_HEADERS)
+            buff_response = requests.get(url=buff_item_url, cookies=buff_cookies)
         except Exception as exception:
             raise BuffRequestFailure(f'Failed to get buff response: {exception}')
 
@@ -175,7 +192,7 @@ class ItemsScaner:
         # Do timeout if necessary.
         if do_timeout:
             print(f'Buff asked for {hash_name}, sleeping...')
-            ItemsScaner.__sleep()
+            self.__sleep()
 
         # Buff response is successful.
         return buff_json_load['data']['items'][0]
@@ -198,20 +215,20 @@ class ItemsScaner:
 
         return cs_items
 
-    @staticmethod
-    def __get_buff_page_data(page_index: int) -> dict:
+    def __get_buff_page_data(self, page_index: int) -> dict:
         """
         Returns raw buff data by page index BuffRequestFailure can be raised.
         :param page_index: Index of parsing page.
         :return: Raw buff page data.
         """
         items = dict()
-        params = ScanerConfig.BUFF_PARAMS
-        params['page_num'] = page_index
+
+        goods_url = 'https://buff.163.com/api/market/goods'
+        params = {'game': 'csgo', 'page_num': page_index}
+        cookies = {'session': self.__buff_session}
 
         try:
-            buff_response = requests.get(ScanerConfig.BUFF_URL_SALE, params=params, cookies=ScanerConfig.BUFF_COOKIES,
-                                         headers=ScanerConfig.BUFF_HEADERS)
+            buff_response = requests.get(goods_url, params=params, cookies=cookies)
             buff_json_load = json.loads(buff_response.text)
 
             if buff_json_load['code'] == 'OK':
@@ -232,7 +249,6 @@ class ItemsScaner:
         :param hash_name: Hash name of sought-for item.
         :return: Raw market data typeof dict.
         """
-        # None).
         try:
             return self.__market.search_item_by_hash_name(hash_name=hash_name)['data']
         except Exception as exception:
@@ -285,21 +301,24 @@ class ItemsScaner:
             except KeyError:
                 raise ParsingFailure('Failed to parse market data.')
 
-            return CsItem(hash_name=hash_name, buff_url=buff_url, buff_price=buff_price, market_price=market_price)
+            return CsItem(hash_name=hash_name, buff_url=buff_url, buff_price=buff_price, market_price=market_price,
+                          rub_to_cny=self.__rub_to_cny_ratio)
         else:
             return CsItem(hash_name=hash_name, error='No such item on cs market.')
 
-    @staticmethod
-    def __sleep():
+    def __sleep(self):
         """
         Makes timeout with random duration.
         :return: None
         """
-        time.sleep(random.randrange(ScanerConfig.AUTO_SCAN_TIMEOUT_MIN, ScanerConfig.AUTO_SCAN_TIMEOUT_MAX))
+        time.sleep(random.randrange(self.__request_timeout_min, self.__request_timeout_max))
 
     @staticmethod
     def __get_hashes_by_scan_list_name(scan_list_name: str):
-        list_file = f'{ScanerConfig.SCAN_LISTS_FOLDER_NAME}/{scan_list_name}.txt'
+        scaner_path = os.path.realpath('__file__')
+        s = scaner_path.split('\\')
+        lists_folder = scaner_path.replace(f'{s[-1]}', '')
+        list_file = f'{lists_folder}Scan lists\\{scan_list_name}.txt'
 
         try:
             file_lines = open(list_file, 'r', encoding="utf8").readlines()

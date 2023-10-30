@@ -1,14 +1,11 @@
-from config import ItemsAnalyzer
-
-
 class CsItem:
     def __init__(self, hash_name: str, error: str = None, buff_url: str = None, buff_price: float = None,
-                 market_price: float = None):
+                 market_price: float = None, rub_to_cny: float = None):
         self.__hash_name = hash_name
         self.__buff_url = buff_url
         self.__buff_price = buff_price
         self.__market_price = market_price
-
+        self.__rub_to_cny = rub_to_cny
         self.processing_error = error
 
     def __repr__(self):
@@ -43,7 +40,7 @@ class CsItem:
         if self.__buff_price is None:
             return None
 
-        return round(self.__buff_price * ItemsAnalyzer.DEPOSIT_RUB_TO_CNY)
+        return round(self.__buff_price * self.__rub_to_cny)
 
     @property
     def rub_to_cny(self):
@@ -65,7 +62,7 @@ class CsItem:
         if self.rub_to_cny is None:
             return None
 
-        return round((self.rub_to_cny / ItemsAnalyzer.DEPOSIT_RUB_TO_CNY), 2)
+        return round((self.rub_to_cny / self.__rub_to_cny), 2)
 
     @property
     def properties_array(self) -> []:
