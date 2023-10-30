@@ -51,7 +51,7 @@ class ConfigLoader:
             self.__request_timeout_min = int(config_lines[2].split()[1])
             self.__request_timeout_max = int(config_lines[3].split()[1])
             self.__scanned_pages_to_autosave = int(config_lines[4].split()[1])
-            self.__rub_to_cny_ratio = int(config_lines[5].split()[1])
+            self.__rub_to_cny_ratio = float(config_lines[5].split()[1])
         except (ValueError, IndexError) as exception:
             raise ConfigException(f'Invalid config syntax: {exception}')
 

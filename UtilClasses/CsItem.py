@@ -1,8 +1,7 @@
 class CsItem:
-    def __init__(self, hash_name: str, error: str = None, buff_url: str = None, buff_price: float = None,
+    def __init__(self, hash_name: str, error: str = None, buff_price: float = None,
                  market_price: float = None, rub_to_cny: float = None):
         self.__hash_name = hash_name
-        self.__buff_url = buff_url
         self.__buff_price = buff_price
         self.__market_price = market_price
         self.__rub_to_cny = rub_to_cny
@@ -22,7 +21,6 @@ class CsItem:
             representation += f'Buff price: {self.__buff_price}¥ ({self.buff_rub_price}₽)\n'
             representation += f'Market price: {self.__market_price}₽\n'
             representation += f'Profit percent: {self.profit_percent}%\n'
-            representation += f'Buff url: {self.__buff_url}\n'
 
         representation += '-' * len(representation.split('\n')[-2])
         return representation

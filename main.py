@@ -1,4 +1,6 @@
 from datetime import datetime
+
+import constants
 from constants import ConstantCommands
 from constants import ConstantExceptions
 from UtilClasses.itemsstorage import ItemsStorage
@@ -13,18 +15,16 @@ class Main:
             input()
             exit()
 
-        self.__storage = ItemsStorage()
-
-        # Difficult commands have their own methods.
+        # Commands have their own methods.
         self.__command_methods = {
             ConstantCommands.COMMAND_DIE: self.__die,
             ConstantCommands.COMMAND_ANALYZE_ITEM: self.__analyze_item,
             ConstantCommands.COMMAND_ANALYZE_LIST: self.__analyze_list,
             ConstantCommands.COMMAND_ANALYZE_PAGES: self.__analyze_pages,
             ConstantCommands.COMMAND_STORAGE_INFO: self.__storage_info,
-            ConstantCommands.COMMAND_STORAGE_PAGE: self.__storage_page,
-            ConstantCommands.COMMAND_STORAGE_SORT: self.__storage_sort,
-            ConstantCommands.COMMAND_STORAGE_SAVE: self.__storage_save
+            ConstantCommands.COMMAND_STORAGE_SAVE: self.__storage_save,
+            ConstantCommands.COMMAND_STORAGE_LOAD: self.__storage_load,
+            ConstantCommands.COMMAND_HELP: self.__help,
         }
 
         print('BuffScaner initialized')
@@ -96,39 +96,17 @@ class Main:
     def __storage_info(self, user_request: UserRequest) -> str:
         return repr(self.__storage)
 
-    def __storage_sort(self, user_request: UserRequest) -> str:
-        if len(user_request.command_args) == 0:
-            return ConstantExceptions.MISSING_ARGUMENT
-
-        return self.__storage.sort_items(sorting_attribute=user_request.command_arg)
-
     def __storage_save(self, user_request: UserRequest) -> str:
         if len(user_request.command_args) == 0:
             return ConstantExceptions.MISSING_ARGUMENT
 
         return self.__storage.save(file_name=user_request.command_arg)
 
-    def __remove_storage_page(self, user_request: UserRequest) -> str:
+    def __storage_load(self, user_request: UserRequest) -> str:
         if len(user_request.command_args) == 0:
             return ConstantExceptions.MISSING_ARGUMENT
 
-        try:
-            page_index = int(user_request.command_arg)
-        except ValueError:
-            return ConstantExceptions.INVALID_ARGUMENT_TYPE
-
-        return self.__storage.remove_page(page_index=page_index)
-
-    def __storage_page(self, user_request: UserRequest) -> str:
-        if len(user_request.command_args) == 0:
-            return ConstantExceptions.MISSING_ARGUMENT
-
-        try:
-            page_index = int(user_request.command_arg)
-        except ValueError:
-            return ConstantExceptions.INVALID_ARGUMENT_TYPE
-
-        return self.__storage.get_page_repr(page_index=page_index)
+        return self.__storage.load(file_name=user_request.command_arg)
 
     def __get_request_response(self, user_request: UserRequest) -> str:
         """
@@ -164,14 +142,20 @@ class Main:
 
         try:
             self.__scaner = ItemsScaner(self.__config_loader)
-            return True
         except ScanerInitializationException as exception:
             print(exception)
             return False
 
+        self.__storage = ItemsStorage(self.__config_loader)
+        return True
+
     @staticmethod
     def __die(user_request: UserRequest):
         exit()
+
+    @staticmethod
+    def __help(user_request: UserRequest) -> str:
+        return constants.ConstantStrings.HELP_REPLY
 
     @staticmethod
     def __get_str_time():
