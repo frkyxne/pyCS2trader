@@ -4,12 +4,12 @@ from constants import ConstantExceptions
 from UtilClasses.itemsstorage import ItemsStorage
 from UtilClasses.userrequest import UserRequest
 from UtilClasses.itemsscaner import ItemsScaner, ScanningException, ScanerInitializationException
-from config import Main as MainConfig
+from UtilClasses.configloader import ConfigLoader, ConfigException
 
 
 class Main:
     def __init__(self):
-        if not self.__setup_scaner():
+        if not self.__setup():
             input()
             exit()
 
@@ -87,7 +87,7 @@ class Main:
             self.__storage.add_items(page_list)
             print(f'[{self.__get_str_time()}] Buff page {i} was parsed and moved into storage.')
 
-            if i % MainConfig.PAGES_TO_AUTOSAVE == 0:
+            if i % self.__config_loader.scanned_pages_to_autosave == 0:
                 self.__storage.save('autosave')
                 print('Storage was auto saved.')
 
@@ -151,13 +151,19 @@ class Main:
         response = self.__get_request_response(user_request=user_request)
         print(response)
 
-    def __setup_scaner(self) -> bool:
+    def __setup(self) -> bool:
         """
-        Sets up scaner.
+        Loads config and sets up scaner.
         :return: Is successful?
         """
         try:
-            self.__scaner = ItemsScaner()
+            self.__config_loader = ConfigLoader()
+        except ConfigException as exception:
+            print(exception)
+            return False
+
+        try:
+            self.__scaner = ItemsScaner(self.__config_loader)
             return True
         except ScanerInitializationException as exception:
             print(exception)

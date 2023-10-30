@@ -1,8 +1,7 @@
 import csv
+import os
 from UtilClasses.csitem import CsItem
 from UtilClasses.csitemlist import CsItemsList
-from constants import ItemStorage as StorageConstants
-from config import ItemsStorage as StorageConfig
 
 
 class ItemsStorage:
@@ -10,18 +9,13 @@ class ItemsStorage:
         self.__items = []
 
     def __repr__(self):
-        representation = f'{"-"*29}\nItems storage representation.\n\n'
+        representation = f'{"-" * 29}\nItems storage representation.\n\n'
 
         items_len = len(self.__items)
-        representation += f'Items in storage: [{items_len}] ([{self.pages_count}] pages).'
+        representation += f'Items in storage: [{items_len}]'
 
         representation += '\n' + '-' * len(representation.split('\n')[-1])
         return representation
-
-    @property
-    def pages_count(self) -> int:
-        return (len(self.__items) // StorageConfig.PAGE_ITEMS_COUNT +
-                (1 if len(self.__items) % StorageConfig.PAGE_ITEMS_COUNT != 0 else 0))
 
     def add_item(self, item: CsItem):
         """
@@ -64,11 +58,17 @@ class ItemsStorage:
         :param file_name: Name of save file.
         :return: Callback of operation.
         """
+        loader_path = os.path.realpath('__file__')
+        s = loader_path.split('\\')
+        storage_folder = loader_path.replace(f'{s[-1]}', '') + 'Storage saves.txt'
+        header = ['hash_name', 'buff_cny_price', 'buff_rub_price', 'market_price', 'rub to cny',
+                  'profit_percent']
+
         try:
-            with (open(f'{StorageConfig.STORAGE_SAVES_FOLDER_NAME}/{file_name}.csv', 'w', encoding='UTF8', newline='')
+            with (open(f'{storage_folder}/{file_name}.csv', 'w', encoding='UTF8', newline='')
                   as file):
                 writer = csv.writer(file)
-                writer.writerow(StorageConfig.STORAGE_SAVE_HEADER)
+                writer.writerow(header)
 
                 for item in self.__items:
                     writer.writerow(item.properties_array)

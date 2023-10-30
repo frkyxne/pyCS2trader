@@ -1,11 +1,3 @@
-class ItemStorage:
-    EXCEPTION_STORAGE_EMPTY = 'Storage is empty :('
-
-    SORTING_ATTRIBUTE_PROFIT_RUB = 'rub'
-    SORTING_ATTRIBUTE_PERCENT = 'percent'
-    SORTING_ATTRIBUTE_COST_PRICE = 'cost_price'
-
-
 class ConstantExceptions:
     MISSING_ARGUMENT = 'Missing argument.'
     WRONG_ARGUMENT_SYNTAX = 'Wrong argument syntax.'
