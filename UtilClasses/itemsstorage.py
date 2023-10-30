@@ -2,11 +2,13 @@ import csv
 import os
 from UtilClasses.csitem import CsItem
 from UtilClasses.csitemlist import CsItemsList
+from UtilClasses.configloader import ConfigLoader
 
 
 class ItemsStorage:
-    def __init__(self):
+    def __init__(self, config_loader: ConfigLoader):
         self.__items = []
+        self.__rub_to_cny = config_loader.rub_to_cny_ratio
 
     def __repr__(self):
         representation = f'{"-" * 29}\nItems storage representation.\n\n'
@@ -52,20 +54,41 @@ class ItemsStorage:
         """
         self.__items.clear()
 
+    def load(self, file_name: str):
+        """
+        Loads .csv data to storage.
+        :param file_name: Name of save file.
+        :return: Callback of operation.
+        """
+        try:
+            save_lines = open(f'{self.__saves_folder()}/{file_name}.csv', 'r', encoding='UTF8').readlines()
+        except FileNotFoundError as exception:
+            return f'During storage load exception raised: {exception}'
+
+        # Remove header
+        save_lines.pop(0)
+
+        try:
+            for save_line in save_lines:
+                s = save_line.split(',')
+                self.add_item(CsItem(hash_name=s[0], buff_price=float(s[1]), market_price=float(s[3]),
+                                     rub_to_cny=self.__rub_to_cny))
+        except ValueError as exception:
+            return f'During parsing of load file exception raised: {exception}'
+
+        return f'Items from {file_name}.csv were added successfully.'
+
     def save(self, file_name: str) -> str:
         """
         Saves all items in .csv file.
         :param file_name: Name of save file.
         :return: Callback of operation.
         """
-        loader_path = os.path.realpath('__file__')
-        s = loader_path.split('\\')
-        storage_folder = loader_path.replace(f'{s[-1]}', '') + 'Storage saves.txt'
         header = ['hash_name', 'buff_cny_price', 'buff_rub_price', 'market_price', 'rub to cny',
                   'profit_percent']
 
         try:
-            with (open(f'{storage_folder}/{file_name}.csv', 'w', encoding='UTF8', newline='')
+            with (open(f'{self.__saves_folder()}/{file_name}.csv', 'w', encoding='UTF8', newline='')
                   as file):
                 writer = csv.writer(file)
                 writer.writerow(header)
@@ -88,3 +111,9 @@ class ItemsStorage:
             if good.hash_name == hash_name:
                 return good
         return None
+
+    @staticmethod
+    def __saves_folder() -> str:
+        loader_path = os.path.realpath('__file__')
+        s = loader_path.split('\\')
+        return loader_path.replace(f'{s[-1]}', '') + 'Storage saves'

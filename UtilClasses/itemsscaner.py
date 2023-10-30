@@ -280,10 +280,10 @@ class ItemsScaner:
         :param market_data: Market data of sought-for item to parse.
         :return: Parsed CsItem.
         """
-        try:
-            buff_url = f'https://buff.163.com/goods/{self.__get_buff_id_by_hash(hash_name=hash_name)}'
-        except KeyError:
-            raise ParsingFailure('Buff id was now found.')
+        # try:
+        #     buff_url = f'https://buff.163.com/goods/{self.__get_buff_id_by_hash(hash_name=hash_name)}'
+        # except KeyError:
+        #     raise ParsingFailure('Buff id was now found.')
 
         # Get min buff price.
         try:
@@ -301,7 +301,7 @@ class ItemsScaner:
             except KeyError:
                 raise ParsingFailure('Failed to parse market data.')
 
-            return CsItem(hash_name=hash_name, buff_url=buff_url, buff_price=buff_price, market_price=market_price,
+            return CsItem(hash_name=hash_name, buff_price=buff_price, market_price=market_price,
                           rub_to_cny=self.__rub_to_cny_ratio)
         else:
             return CsItem(hash_name=hash_name, error='No such item on cs market.')
