@@ -114,6 +114,6 @@ class ItemsStorage:
 
     @staticmethod
     def __saves_folder() -> str:
-        loader_path = os.path.realpath('__file__')
+        loader_path = os.path.abspath(__file__)
         s = loader_path.split('\\')
-        return loader_path.replace(f'{s[-1]}', '') + 'Storage saves'
+        return loader_path.replace(f'{s[-2]}\\{s[-1]}', '') + 'Storage saves'

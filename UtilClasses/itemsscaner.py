@@ -315,9 +315,9 @@ class ItemsScaner:
 
     @staticmethod
     def __get_hashes_by_scan_list_name(scan_list_name: str):
-        scaner_path = os.path.realpath('__file__')
+        scaner_path = os.path.abspath(__file__)
         s = scaner_path.split('\\')
-        lists_folder = scaner_path.replace(f'{s[-1]}', '')
+        lists_folder = scaner_path.replace(f'{s[-2]}\\{s[-1]}', '')
         list_file = f'{lists_folder}Scan lists\\{scan_list_name}.txt'
 
         try:

@@ -36,9 +36,9 @@ class ConfigLoader:
         return self.__rub_to_cny_ratio
 
     def load(self):
-        loader_path = os.path.realpath('__file__')
+        loader_path = os.path.abspath(__file__)
         s = loader_path.split('\\')
-        config_path = loader_path.replace(f'{s[-1]}', '') + 'config.txt'
+        config_path = loader_path.replace(f'{s[-2]}\\{s[-1]}', '') + 'config.txt'
 
         try:
             config_lines = open(config_path, 'r').readlines()
