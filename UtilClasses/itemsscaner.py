@@ -25,6 +25,9 @@ class ItemsScaner:
             raise ScanerInitializationException(f'Failed to initialize ItemsScaner: {exception}')
 
     def load_config(self, config_loader: ConfigLoader):
+        """
+        Loads config from config_loader.
+        """
         self.__market = CsMarket(api_key=config_loader.cs_market_api_key)
         self.__buff_session = config_loader.buff_session
         self.__request_timeout_min = config_loader.request_timeout_min
@@ -315,6 +318,10 @@ class ItemsScaner:
 
     @staticmethod
     def __get_hashes_by_scan_list_name(scan_list_name: str):
+        """
+        Gets hashes of items in given list.
+        :return: Array of hashes.
+        """
         scaner_path = os.path.abspath(__file__)
         s = scaner_path.split('\\')
         lists_folder = scaner_path.replace(f'{s[-2]}\\{s[-1]}', '')

@@ -1,5 +1,9 @@
 class UserRequest:
     def __init__(self, request: str):
+        if request == '':
+            self.__command = None
+            return
+
         request_split = request.split()
         self.__command = request_split[0]
 
