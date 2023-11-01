@@ -21,9 +21,9 @@ Fill config.txt:
 - Set buff.163 session cookie.
 
 You can add .txt files of hashes to scan items of interest automatically. 
-Item hashes you can get from https://raw.githubusercontent.com/ModestSerhat/buff163-ids/main/buffids.txt
+Item hashes you can get from https://raw.githubusercontent.com/ModestSerhat/buff163-ids/main/buffids.txt <br />
 
-Hash list .txt files should be saved in ```Scan lists``` folder.
+Hash list .txt files should be saved in ```Scan lists``` folder. <br />
 Storage saves and loads .csv files from ```Storage saves``` folder.
 
 ## Work in progress
