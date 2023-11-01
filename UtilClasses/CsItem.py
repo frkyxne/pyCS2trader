@@ -16,7 +16,7 @@ class CsItem:
         representation += f'Hash name: {self.__hash_name}\n'
 
         if self.processing_error is not None:
-            representation += f'Processing error: {self.processing_error}\n\n'
+            representation += f'Processing error: {self.processing_error}\n'
         else:
             representation += f'Buff price: {self.__buff_price}¥ ({self.buff_rub_price}₽)\n'
             representation += f'Market price: {self.__market_price}₽\n'

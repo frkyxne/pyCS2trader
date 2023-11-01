@@ -11,6 +11,8 @@ def _send_request(func):
             response = requests.get(url, params)
             if response.status_code == 200:
                 break
+            if response.status_code == 401:
+                raise NoConnection('Bad market api key.')
             if time.time() > end_time:
                 if response.status_code == 502:
                     raise NoConnection('No connection with market.csgo.com servers.')

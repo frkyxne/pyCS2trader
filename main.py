@@ -38,6 +38,9 @@ class Main:
             self.__handle_command()
 
     def __analyze_item(self, user_request: UserRequest) -> str:
+        """
+        /analyze_item
+        """
         if len(user_request.command_args) == 0:
             return ConstantExceptions.MISSING_ARGUMENT
 
@@ -52,6 +55,9 @@ class Main:
         return repr(cs_item)
 
     def __analyze_list(self, user_request: UserRequest) -> str:
+        """
+        /analyze_list
+        """
         if len(user_request.command_args) == 0:
             return ConstantExceptions.MISSING_ARGUMENT
 
@@ -66,6 +72,9 @@ class Main:
         return repr(cs_items_list)
 
     def __analyze_pages(self, user_request: UserRequest) -> str:
+        """
+        /analyze_pages
+        """
         if len(user_request.command_args) == 0:
             return ConstantExceptions.MISSING_ARGUMENT
 
@@ -94,15 +103,24 @@ class Main:
         return f'Buff pages scan complete. {page_index} pages was scanned.'
 
     def __storage_info(self, user_request: UserRequest) -> str:
+        """
+        /storage
+        """
         return repr(self.__storage)
 
     def __storage_save(self, user_request: UserRequest) -> str:
+        """
+        /storage_save
+        """
         if len(user_request.command_args) == 0:
             return ConstantExceptions.MISSING_ARGUMENT
 
         return self.__storage.save(file_name=user_request.command_arg)
 
     def __storage_load(self, user_request: UserRequest) -> str:
+        """
+        /storage_load
+        """
         if len(user_request.command_args) == 0:
             return ConstantExceptions.MISSING_ARGUMENT
 
@@ -151,10 +169,16 @@ class Main:
 
     @staticmethod
     def __die(user_request: UserRequest):
+        """
+        /die
+        """
         exit()
 
     @staticmethod
     def __help(user_request: UserRequest) -> str:
+        """
+        /help
+        """
         return constants.ConstantStrings.HELP_REPLY
 
     @staticmethod
