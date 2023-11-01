@@ -22,8 +22,8 @@ Fill config.txt:
 
 You can add .txt files of hashes to scan items of interest automatically. 
 Item hashes you can get from https://raw.githubusercontent.com/ModestSerhat/buff163-ids/main/buffids.txt
-Hash list .txt files should be saved in ```Scan lists``` folder.
 
+Hash list .txt files should be saved in ```Scan lists``` folder.
 Storage saves and loads .csv files from ```Storage saves``` folder.
 
 ## Work in progress
