@@ -4,30 +4,30 @@ import constants
 from constants import ConstantCommands
 from constants import ConstantExceptions
 from UtilClasses.itemsstorage import ItemsStorage
-from UtilClasses.userrequest import UserRequest
-from UtilClasses.itemsscaner import ItemsScaner, ScanningException, ScanerInitializationException
+from UtilClasses.consolemanager import ConsoleManager, UserRequest
+from UtilClasses.itemsscaner import ItemsScaner, ItemsScanerException
 from UtilClasses.configloader import ConfigLoader, ConfigException
 
 
 class Main:
     def __init__(self):
         if not self.__setup():
-            input()
+            input('Enter any message to exit')
             exit()
 
         # Commands have their own methods.
         self.__command_methods = {
             ConstantCommands.COMMAND_DIE: self.__die,
             ConstantCommands.COMMAND_ANALYZE_ITEM: self.__analyze_item,
-            ConstantCommands.COMMAND_ANALYZE_LIST: self.__analyze_list,
             ConstantCommands.COMMAND_ANALYZE_PAGES: self.__analyze_pages,
             ConstantCommands.COMMAND_STORAGE_INFO: self.__storage_info,
-            ConstantCommands.COMMAND_STORAGE_SAVE: self.__storage_save,
+            ConstantCommands.COMMAND_SAVE_CSV: self.__storage_save_csv,
+            ConstantCommands.COMMAND_SAVE_EXCEL: self.__storage_save_excel,
             ConstantCommands.COMMAND_STORAGE_LOAD: self.__storage_load,
             ConstantCommands.COMMAND_HELP: self.__help,
         }
 
-        print('BuffScaner initialized')
+        ConsoleManager.print('BuffScaner initialized')
 
     def work(self):
         """
@@ -37,39 +37,24 @@ class Main:
         while True:
             self.__handle_command()
 
-    def __analyze_item(self, user_request: UserRequest) -> str:
+    def __analyze_item(self, user_request: UserRequest):
         """
         /analyze_item
         """
         if len(user_request.command_args) == 0:
-            return ConstantExceptions.MISSING_ARGUMENT
+            ConsoleManager.print(ConstantExceptions.MISSING_ARGUMENT)
+            return
 
         item_hash = user_request.command_arg
 
         try:
             cs_item = self.__scaner.scan_item(hash_name=item_hash)
-        except ScanningException as exception:
-            return str(exception)
+        except ItemsScanerException as exception:
+            ConsoleManager.print(str(exception))
+            return
 
         self.__storage.add_item(item=cs_item)
-        return repr(cs_item)
-
-    def __analyze_list(self, user_request: UserRequest) -> str:
-        """
-        /analyze_list
-        """
-        if len(user_request.command_args) == 0:
-            return ConstantExceptions.MISSING_ARGUMENT
-
-        list_name = user_request.command_arg
-
-        try:
-            cs_items_list = self.__scaner.scan_list(list_name=list_name)
-        except ScanningException as exception:
-            return str(exception)
-
-        self.__storage.add_items(cs_items_list)
-        return repr(cs_items_list)
+        ConsoleManager.print(cs_item)
 
     def __analyze_pages(self, user_request: UserRequest) -> str:
         """
@@ -89,44 +74,53 @@ class Main:
         for i in range(1, page_index + 1):
             try:
                 page_list = self.__scaner.scan_buff_page(i)
-            except ScanningException as exception:
-                print(f'[{self.__get_str_time()}] Exception raised during scanning page {i}: {exception}')
+            except ItemsScanerException as exception:
+                ConsoleManager.print(f'Exception raised during scanning page {i}: {exception}')
                 continue
 
             self.__storage.add_items(page_list)
-            print(f'[{self.__get_str_time()}] Buff page {i} was parsed and moved into storage.')
+            ConsoleManager.print(f'Buff page {i} was parsed and moved into storage.')
 
             if i % self.__config_loader.scanned_pages_to_autosave == 0:
-                self.__storage.save('autosave')
-                print('Storage was auto saved.')
+                self.__storage.save_csv('autosave')
+                ConsoleManager.print('Storage was auto saved.')
 
         return f'Buff pages scan complete. {page_index} pages was scanned.'
 
-    def __storage_info(self, user_request: UserRequest) -> str:
+    def __storage_info(self, user_request: UserRequest):
         """
         /storage
         """
-        return repr(self.__storage)
+        ConsoleManager.print(self.__storage)
 
-    def __storage_save(self, user_request: UserRequest) -> str:
+    def __storage_save_csv(self, user_request: UserRequest):
         """
-        /storage_save
+        /save_csv
         """
         if len(user_request.command_args) == 0:
-            return ConstantExceptions.MISSING_ARGUMENT
+            ConsoleManager.print(ConstantExceptions.MISSING_ARGUMENT)
 
-        return self.__storage.save(file_name=user_request.command_arg)
+        ConsoleManager.print(self.__storage.save_csv(file_name=user_request.command_arg))
 
-    def __storage_load(self, user_request: UserRequest) -> str:
+    def __storage_save_excel(self, user_request: UserRequest):
+        """
+        /save_excel
+        """
+        if len(user_request.command_args) == 0:
+            ConsoleManager.print(ConstantExceptions.MISSING_ARGUMENT)
+
+        ConsoleManager.print(self.__storage.save_excel(file_name=user_request.command_arg))
+
+    def __storage_load(self, user_request: UserRequest):
         """
         /storage_load
         """
         if len(user_request.command_args) == 0:
-            return ConstantExceptions.MISSING_ARGUMENT
+            ConsoleManager.print(ConstantExceptions.MISSING_ARGUMENT)
 
-        return self.__storage.load(file_name=user_request.command_arg)
+        ConsoleManager.print(self.__storage.load(file_name=user_request.command_arg))
 
-    def __get_request_response(self, user_request: UserRequest) -> str:
+    def __execute_user_request(self, user_request: UserRequest):
         """
         Executes given request.
         :return: Request callback.
@@ -134,22 +128,21 @@ class Main:
         request_command = user_request.command
 
         if request_command in self.__command_methods.keys():
-            return f'\n{self.__command_methods[request_command](user_request=user_request)}'
+            self.__command_methods[request_command](user_request=user_request)
         else:
-            return f'\nCommand "{request_command}" is not supported.'
+            ConsoleManager.print(f'Command "{request_command}" is not supported.')
 
     def __handle_command(self):
         """
         Listens and executes user command.
         :return: None
         """
-        user_request = UserRequest(input())
-        response = self.__get_request_response(user_request=user_request)
-        print(response)
+        user_request = ConsoleManager.get_input()
+        self.__execute_user_request(user_request=user_request)
 
     def __setup(self) -> bool:
         """
-        Loads config and sets up scaner.
+        Loads config and sets up pyCS2trader.
         :return: Is successful?
         """
         try:
@@ -160,7 +153,7 @@ class Main:
 
         try:
             self.__scaner = ItemsScaner(self.__config_loader)
-        except ScanerInitializationException as exception:
+        except ItemsScanerException as exception:
             print(exception)
             return False
 
@@ -175,16 +168,11 @@ class Main:
         exit()
 
     @staticmethod
-    def __help(user_request: UserRequest) -> str:
+    def __help(user_request: UserRequest):
         """
         /help
         """
-        return constants.ConstantStrings.HELP_REPLY
-
-    @staticmethod
-    def __get_str_time():
-        s = str(datetime.now().time())
-        return s.split('.')[0]
+        ConsoleManager.print(constants.ConstantStrings.HELP_REPLY)
 
 
 if __name__ == '__main__':
